@@ -163,7 +163,7 @@ public class ArvoreRN {
     }
 
     private void checaRegrasInsercao(No node){
-        // Caso 1
+        // CASO 1
         // evitando o NullPointerException
         if(node.getPai() != null){
             No pai = node.getPai();
@@ -171,35 +171,100 @@ public class ArvoreRN {
             if(pai.getCor() == 0){
                 node.setCor(1);
             }
-            // evitando o NullPointerException
-            if(pai.getPai() != null){
-                No avo = pai.getPai();
-                No tio = null;
-                // se tio for nulo então é um sentinela negro
-                int tioCor = 0;
-                // tentando achar o tio
-                if(temDoisFilhos(avo)){
-                    if(ehFilhoDireito(pai)){
-                        tio = avo.getFilhoEsquerdo();
-                    }else{
-                        tio = avo.getFilhoDireito();
+            // checando os outros casos
+            // CASO 2
+            insercaoCaso2(node);
+            // CASO 3 (rotações)
+            insercaoCaso3(node);
+
+        }
+    }
+
+    public void insercaoCaso2(No node) {
+        No pai = node.getPai();
+        // evitando o NullPointerException
+        if (pai.getPai() != null) {
+            No avo = pai.getPai();
+            No tio = null;
+            // se tio for nulo então é um sentinela negro
+            int tioCor = 0;
+            // tentando achar o tio
+            if (temDoisFilhos(avo)) {
+                if (ehFilhoDireito(pai)) {
+                    tio = avo.getFilhoEsquerdo();
+                } else {
+                    tio = avo.getFilhoDireito();
+                }
+                tioCor = tio.getCor();
+            }
+            // CASO 2
+            // pai rubro, avô negro e tio rubro (apenas re-coloração)
+            while (pai != null && pai.getCor() == 1 && avo.getCor() == 0 && tioCor == 1) {
+                // se for 0 é negra, se for 1 é rubro
+                avo.setCor(1);
+                pai.setCor(0);
+                tio.setCor(0);
+                // atualiza as variáveis para verificar novamente
+                node = avo;
+                pai = node.getPai();
+                if (pai != null) {
+                    avo = pai.getPai();
+                    tio = null;
+                    tioCor = 0;
+                    // tentando achar o tio
+                    if (temDoisFilhos(avo)) {
+                        if (ehFilhoDireito(pai)) {
+                            tio = avo.getFilhoEsquerdo();
+                        } else {
+                            tio = avo.getFilhoDireito();
+                        }
+                        tioCor = tio.getCor();
                     }
-                    tioCor = tio.getCor();
                 }
-                // Caso 2
-                // pai rubro, avô negro e tio rubro (apenas re-coloração)
-                else if (pai.getCor() == 1 && avo.getCor() == 0 && tioCor == 1){
-                    // se for 0 é negra, se for 1 é rubro
-                    avo.setCor(1);
-                    pai.setCor(0);
-                    tio.setCor(0);
-                }
-                // Caso 3
+
             }
 
         }
-
     }
+
+    public void insercaoCaso3(No node){
+        No pai = node.getPai();
+        if(pai.getPai() != null) {
+            No avo = pai.getPai();
+            No tio = null;
+            // se tio for nulo então é um sentinela negro
+            int tioCor = 0;
+            // tentando achar o tio
+            if (temDoisFilhos(avo)) {
+                if (ehFilhoDireito(pai)) {
+                    tio = avo.getFilhoEsquerdo();
+                } else {
+                    tio = avo.getFilhoDireito();
+                }
+                tioCor = tio.getCor();
+            }
+            // pai rubro, avô negro, tio negro
+            if(pai.getCor() == 1 && avo.getCor() == 0 && tioCor == 0){
+                // 3a (rotação direita simples)
+                if(ehFilhoDireito(pai)&& ehFilhoDireito(node)){
+
+                }
+                // 3b (rotação esquerda simples)
+                else if(ehFilhoEsquerdo(pai) && ehFilhoEsquerdo(node)){
+
+                }
+                // 3c (rotação esquerda dupla)
+                else if(ehFilhoDireito(pai) && ehFilhoEsquerdo(node)){
+
+                }
+                // 3d (rotação direita dupla)
+                else if(ehFilhoEsquerdo(pai) && ehFilhoEsquerdo(node)){
+
+                }
+            }
+        }
+    }
+
 
     private No sucessor(No node){
         if(node.getFilhoEsquerdo() == null){

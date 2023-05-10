@@ -96,6 +96,12 @@ public class ArvoreRN {
         return node.getFilhoDireito() != null || node.getFilhoEsquerdo() != null;
     }
 
+    private void corrigirRaiz() {
+        if (raiz != null) {
+            raiz.setCor(0); // garante que a raiz seja sempre preta
+        }
+    }
+
     public No pesquisar(No node, Object chave){
         if(ehExterno(node)){
             return node;
@@ -168,14 +174,14 @@ public class ArvoreRN {
         if(node.getPai() != null){
             No pai = node.getPai();
             // se for 0 é negra, se for 1 é rubro
-            if(pai.getCor() == 0){
-                node.setCor(1);
-            }
+            node.setCor(1);
             // checando os outros casos
             // CASO 2
             insercaoCaso2(node);
+            corrigirRaiz();
             // CASO 3 (rotações)
             insercaoCaso3(node);
+            corrigirRaiz();
 
         }
     }
@@ -246,25 +252,101 @@ public class ArvoreRN {
             // pai rubro, avô negro, tio negro
             if(pai.getCor() == 1 && avo.getCor() == 0 && tioCor == 0){
                 // 3a (rotação direita simples)
-                if(ehFilhoDireito(pai)&& ehFilhoDireito(node)){
-
+                if(ehFilhoEsquerdo(pai) && ehFilhoEsquerdo(node)){
+                    rotacaosimplesDireita(node);
                 }
                 // 3b (rotação esquerda simples)
-                else if(ehFilhoEsquerdo(pai) && ehFilhoEsquerdo(node)){
-
+                else if(ehFilhoDireito(pai)&& ehFilhoDireito(node)){
+                    rotacaosimplesEsquerda(node);
                 }
                 // 3c (rotação esquerda dupla)
                 else if(ehFilhoDireito(pai) && ehFilhoEsquerdo(node)){
-
+                    // pequena rotação com pai e filho
+                    node.setFilhoDireito(pai);
+                    avo.setFilhoDireito(node);
+                    node.setPai(avo);
+                    pai.setPai(node);
+                    rotacaosimplesEsquerda(pai);
                 }
                 // 3d (rotação direita dupla)
-                else if(ehFilhoEsquerdo(pai) && ehFilhoEsquerdo(node)){
+                else if(ehFilhoEsquerdo(pai) && ehFilhoDireito(node)){
+                    // pequena rotação com pai e filho
+                    node.setFilhoEsquerdo(pai);
+                    avo.setFilhoEsquerdo(node);
+                    node.setPai(avo);
+                    pai.setPai(node);
+                    rotacaosimplesDireita(pai);
 
                 }
             }
         }
     }
 
+    public void rotacaosimplesEsquerda(No node){
+        No pai = node.getPai();
+        No avo = pai.getPai();
+        // 'colisão'
+        // se tiver um filho esquerdo ele sempre vai ser filho esquerdo do antigo avô
+        No filhoEsquerdo = null;
+        if(pai.getFilhoEsquerdo()!=null){
+            filhoEsquerdo = pai.getFilhoEsquerdo();
+            filhoEsquerdo.setPai(avo);
+        }
+        avo.setFilhoDireito(filhoEsquerdo);
+        pai.setFilhoEsquerdo(avo);
+        pai.setPai(avo.getPai());
+        // que tipo de filho o pai vai ser
+        if(avo.getPai()!=null){
+            if(ehFilhoDireito(avo)){
+                (avo.getPai()).setFilhoDireito(pai);
+            }
+            else{
+                (avo.getPai()).setFilhoEsquerdo(pai);
+            }
+        }
+        // se o avo for raiz
+        else{
+            pai.setPai(null);
+            raiz = pai;
+        }
+        avo.setPai(pai);
+        // setando as novas cores
+        pai.setCor(0);
+        avo.setCor(1);
+    }
+
+    public void rotacaosimplesDireita(No node){
+        No pai = node.getPai();
+        No avo = pai.getPai();
+        // 'colisão'
+        // se tiver um filho direito ele sempre vai ser filho esquerdo do antigo avô
+        No filhoDireito = null;
+        if(pai.getFilhoDireito()!=null){
+            filhoDireito = pai.getFilhoDireito();
+            filhoDireito.setPai(avo);
+        }
+        avo.setFilhoEsquerdo(filhoDireito);
+        pai.setFilhoDireito(avo);
+        pai.setPai(avo.getPai());
+        // que tipo de filho o pai vai ser
+        if(avo.getPai()!=null){
+            if(ehFilhoDireito(avo)){
+                (avo.getPai()).setFilhoDireito(pai);
+            }
+            else{
+                (avo.getPai()).setFilhoEsquerdo(pai);
+            }
+        }
+        // se o avo for raiz
+        else{
+            pai.setPai(null);
+            raiz = pai;
+        }
+        avo.setPai(pai);
+        // setando as novas cores
+        pai.setCor(0);
+        avo.setCor(1);
+    }
 
     private No sucessor(No node){
         if(node.getFilhoEsquerdo() == null){
@@ -297,7 +379,7 @@ public class ArvoreRN {
         Object[][] m = new Object[altura(raiz)+1][size()];
         emOrdemP(raiz);
         for(int i=0; i < a.size(); i++ ){
-            m[profundidade(a.get(i))] [i]=a.get(i).getChave() + "[" + a.get(i).getCor() + "]";
+            m[profundidade(a.get(i))] [i]=a.get(i).getChave() + "[" + (a.get(i).getCor() == 1 ? "R" : "N") + "]";
         }
 
         for(int l = 0; l < altura(raiz)+1; l++){
@@ -313,14 +395,9 @@ public class ArvoreRN {
             // se o filho esquerdo não for nulo e filho direito for nulo
             return true;
         }
-        if(node.getFilhoEsquerdo() == null && node.getFilhoDireito() != null){
-            // se o filho esquerdo for nulo e filho direito não for nulo
-            return true;
-        }
-        else{
-            return false;
-            // se tiver mais de um filho
-        }
+        // se o filho esquerdo for nulo e filho direito não for nulo
+        // se tiver mais de um filho
+        return node.getFilhoEsquerdo() == null && node.getFilhoDireito() != null;
     }
     public boolean temDoisFilhos(No node){
         if(node.getFilhoEsquerdo() != null && node.getFilhoDireito() != null){
@@ -338,10 +415,7 @@ public class ArvoreRN {
             return false;
         }
         // se for o filho direito = true
-        if (paiDoNo.getFilhoDireito() == node) {
-            return true;
-        }
-        return false;
+        return paiDoNo.getFilhoDireito() == node;
     }
 
     public boolean ehFilhoEsquerdo(No node) {
@@ -352,10 +426,7 @@ public class ArvoreRN {
             return false;
         }
         // se for o filho esquerdo = true
-        if (paiDoNo.getFilhoEsquerdo() == node) {
-            return true;
-        }
-        return false;
+        return paiDoNo.getFilhoEsquerdo() == node;
     }
 
     public No getRaiz(){
@@ -393,8 +464,5 @@ public class ArvoreRN {
     public boolean isEmpty(){
         return tamanho == 0;
     }
-
-
-
 
 }

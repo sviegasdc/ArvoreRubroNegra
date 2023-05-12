@@ -177,13 +177,46 @@ public class ArvoreRN {
             node.setCor(1);
             // checando os outros casos
             // CASO 2
-            insercaoCaso2(node);
+            insercaoCasoR(node);
             corrigirRaiz();
             // CASO 3 (rotações)
             insercaoCaso3(node);
             corrigirRaiz();
 
         }
+    }
+
+    public No insercaoCasoR(No node) {
+        if(node==null)
+            return node;
+       // No avo;
+       // No tio;
+        No pai = node.getPai();
+        if (pai != null) {
+            No avo = pai.getPai();
+            No tio = null;
+            // se tio for nulo então é um sentinela negro
+            int tioCor = 0;
+            // tentando achar o tio
+            if (avo != null) {
+                if (temDoisFilhos(avo)) {
+                    if (ehFilhoDireito(pai)) {
+                        tio = avo.getFilhoEsquerdo();
+                    } else {
+                        tio = avo.getFilhoDireito();
+                    }
+                    tioCor = tio.getCor();
+                    if(tioCor==1 && avo.getCor()==0 && pai.getCor()==1) {
+                        avo.setCor(1);
+                        pai.setCor(0);
+                        tio.setCor(0);
+                        return insercaoCasoR(avo);
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     public void insercaoCaso2(No node) {
@@ -195,39 +228,43 @@ public class ArvoreRN {
             // se tio for nulo então é um sentinela negro
             int tioCor = 0;
             // tentando achar o tio
-            if (temDoisFilhos(avo)) {
-                if (ehFilhoDireito(pai)) {
-                    tio = avo.getFilhoEsquerdo();
-                } else {
-                    tio = avo.getFilhoDireito();
-                }
-                tioCor = tio.getCor();
-            }
-            // CASO 2
-            // pai rubro, avô negro e tio rubro (apenas re-coloração)
-            while (pai != null && pai.getCor() == 1 && avo.getCor() == 0 && tioCor == 1) {
-                // se for 0 é negra, se for 1 é rubro
-                avo.setCor(1);
-                pai.setCor(0);
-                tio.setCor(0);
-                // atualiza as variáveis para verificar novamente
-                node = avo;
-                pai = node.getPai();
-                if (pai != null) {
-                    avo = pai.getPai();
-                    tio = null;
-                    tioCor = 0;
-                    // tentando achar o tio
-                    if (temDoisFilhos(avo)) {
-                        if (ehFilhoDireito(pai)) {
-                            tio = avo.getFilhoEsquerdo();
-                        } else {
-                            tio = avo.getFilhoDireito();
-                        }
-                        tioCor = tio.getCor();
+            if(avo != null){
+                if (temDoisFilhos(avo)) {
+                    if (ehFilhoDireito(pai)) {
+                        tio = avo.getFilhoEsquerdo();
+                    } else {
+                        tio = avo.getFilhoDireito();
                     }
+                    tioCor = tio.getCor();
                 }
+                // CASO 2
+                // pai rubro, avô negro e tio rubro (apenas recoloração)
+                // se o pai for rubro significa que ele não é raiz, ou seja, sempre vai ter um pai
+                while (pai != null && pai.getCor() == 1 && avo.getCor() == 0 && tioCor == 1) {
+                    // se for 0 é negra, se for 1 é rubro
+                    avo.setCor(1);
+                    pai.setCor(0);
+                    tio.setCor(0);
+                    // atualiza as variáveis para verificar novamente
+                    node = avo;
+                    pai = node.getPai();
+                    if (pai != null) {
+                        avo = pai.getPai();
+                        tio = null;
+                        tioCor = 0;
+                        // tentando achar o tio
+                        if (temDoisFilhos(avo)) {
+                            if (ehFilhoDireito(pai)) {
+                                tio = avo.getFilhoEsquerdo();
+                            } else {
+                                tio = avo.getFilhoDireito();
+                            }
+                            tioCor = tio.getCor();
+                        }
 
+                    }
+
+                }
             }
 
         }

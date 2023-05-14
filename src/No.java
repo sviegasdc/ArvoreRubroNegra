@@ -7,8 +7,6 @@ public class No {
 
     private No filhoDireito;
 
-    private No irmao;
-
     private int cor;
 
     public No(Object newChave) {
@@ -51,13 +49,5 @@ public class No {
 
     public int getCor(){
         return cor;
-    }
-
-    public void setIrmao(No irmao){
-        this.irmao = irmao;
-    }
-
-    public No getIrmao(){
-        return irmao;
     }
 }

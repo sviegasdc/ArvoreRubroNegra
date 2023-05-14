@@ -177,46 +177,13 @@ public class ArvoreRN {
             node.setCor(1);
             // checando os outros casos
             // CASO 2
-            insercaoCasoR(node);
+            insercaoCaso2(node);
             corrigirRaiz();
             // CASO 3 (rotações)
             insercaoCaso3(node);
             corrigirRaiz();
 
         }
-    }
-
-    public No insercaoCasoR(No node) {
-        if(node==null)
-            return node;
-       // No avo;
-       // No tio;
-        No pai = node.getPai();
-        if (pai != null) {
-            No avo = pai.getPai();
-            No tio = null;
-            // se tio for nulo então é um sentinela negro
-            int tioCor = 0;
-            // tentando achar o tio
-            if (avo != null) {
-                if (temDoisFilhos(avo)) {
-                    if (ehFilhoDireito(pai)) {
-                        tio = avo.getFilhoEsquerdo();
-                    } else {
-                        tio = avo.getFilhoDireito();
-                    }
-                    tioCor = tio.getCor();
-                    if(tioCor==1 && avo.getCor()==0 && pai.getCor()==1) {
-                        avo.setCor(1);
-                        pai.setCor(0);
-                        tio.setCor(0);
-                        return insercaoCasoR(avo);
-                    }
-                }
-            }
-        }
-
-        return null;
     }
 
     public void insercaoCaso2(No node) {
@@ -253,13 +220,15 @@ public class ArvoreRN {
                         tio = null;
                         tioCor = 0;
                         // tentando achar o tio
-                        if (temDoisFilhos(avo)) {
-                            if (ehFilhoDireito(pai)) {
-                                tio = avo.getFilhoEsquerdo();
-                            } else {
-                                tio = avo.getFilhoDireito();
+                        if(avo != null){
+                            if (temDoisFilhos(avo)) {
+                                if (ehFilhoDireito(pai)) {
+                                    tio = avo.getFilhoEsquerdo();
+                                } else {
+                                    tio = avo.getFilhoDireito();
+                                }
+                                tioCor = tio.getCor();
                             }
-                            tioCor = tio.getCor();
                         }
 
                     }
@@ -290,11 +259,11 @@ public class ArvoreRN {
             if(pai.getCor() == 1 && avo.getCor() == 0 && tioCor == 0){
                 // 3a (rotação direita simples)
                 if(ehFilhoEsquerdo(pai) && ehFilhoEsquerdo(node)){
-                    rotacaosimplesDireita(node);
+                    rotacaoSimplesDireita(avo);
                 }
                 // 3b (rotação esquerda simples)
                 else if(ehFilhoDireito(pai)&& ehFilhoDireito(node)){
-                    rotacaosimplesEsquerda(node);
+                    rotacaoSimplesEsquerda(avo);
                 }
                 // 3c (rotação esquerda dupla)
                 else if(ehFilhoDireito(pai) && ehFilhoEsquerdo(node)){
@@ -303,7 +272,8 @@ public class ArvoreRN {
                     avo.setFilhoDireito(node);
                     node.setPai(avo);
                     pai.setPai(node);
-                    rotacaosimplesEsquerda(pai);
+                    pai.setFilhoEsquerdo(null);
+                    rotacaoSimplesEsquerda(avo);
                 }
                 // 3d (rotação direita dupla)
                 else if(ehFilhoEsquerdo(pai) && ehFilhoDireito(node)){
@@ -312,78 +282,74 @@ public class ArvoreRN {
                     avo.setFilhoEsquerdo(node);
                     node.setPai(avo);
                     pai.setPai(node);
-                    rotacaosimplesDireita(pai);
+                    pai.setFilhoDireito(null);
+                    rotacaoSimplesDireita(avo);
 
                 }
             }
         }
     }
 
-    public void rotacaosimplesEsquerda(No node){
-        No pai = node.getPai();
-        No avo = pai.getPai();
-        // 'colisão'
-        // se tiver um filho esquerdo ele sempre vai ser filho esquerdo do antigo avô
+    private No rotacaoSimplesEsquerda(No node) {
+        No antigoPaidoNode = node.getPai();
+        // para caso haja 'colisão' dos nós ao lado esquerdo
         No filhoEsquerdo = null;
-        if(pai.getFilhoEsquerdo()!=null){
-            filhoEsquerdo = pai.getFilhoEsquerdo();
-            filhoEsquerdo.setPai(avo);
+        No filhoDireito = node.getFilhoDireito();
+        if((node.getFilhoDireito()).getFilhoEsquerdo() != null) {
+            filhoEsquerdo = (node.getFilhoDireito()).getFilhoEsquerdo();
+            // não precisa de comparação pq o node sempre vai ser maior que o filho esquerdo (lógica da árvore)
+            filhoEsquerdo.setPai(node);
         }
-        avo.setFilhoDireito(filhoEsquerdo);
-        pai.setFilhoEsquerdo(avo);
-        pai.setPai(avo.getPai());
-        // que tipo de filho o pai vai ser
-        if(avo.getPai()!=null){
-            if(ehFilhoDireito(avo)){
-                (avo.getPai()).setFilhoDireito(pai);
+        node.setFilhoDireito(filhoEsquerdo);
+        filhoDireito.setFilhoEsquerdo(node);
+        filhoDireito.setPai(antigoPaidoNode);
+        if(node.getPai() != null) {
+            if (ehFilhoEsquerdo(node)) {
+                (node.getPai()).setFilhoEsquerdo(filhoDireito);
+            } else {
+                // se for filho direito
+                (node.getPai()).setFilhoDireito(filhoDireito);
             }
-            else{
-                (avo.getPai()).setFilhoEsquerdo(pai);
-            }
+        }else{
+            filhoDireito.setPai(null);
+            raiz = filhoDireito;
         }
-        // se o avo for raiz
-        else{
-            pai.setPai(null);
-            raiz = pai;
-        }
-        avo.setPai(pai);
-        // setando as novas cores
-        pai.setCor(0);
-        avo.setCor(1);
+        node.setPai(filhoDireito);
+        node.setCor(1);
+        filhoDireito.setCor(0);
+        return node;
     }
 
-    public void rotacaosimplesDireita(No node){
-        No pai = node.getPai();
-        No avo = pai.getPai();
-        // 'colisão'
-        // se tiver um filho direito ele sempre vai ser filho esquerdo do antigo avô
+    private No rotacaoSimplesDireita(No node)  {
+        No antigoPaidoNode = node.getPai();
+        // colisão
         No filhoDireito = null;
-        if(pai.getFilhoDireito()!=null){
-            filhoDireito = pai.getFilhoDireito();
-            filhoDireito.setPai(avo);
+        No filhoEsquerdo = node.getFilhoEsquerdo();
+        if((node.getFilhoEsquerdo()).getFilhoDireito() != null){
+            filhoDireito = (node.getFilhoEsquerdo()).getFilhoDireito();
+            filhoDireito.setPai(node);
         }
-        avo.setFilhoEsquerdo(filhoDireito);
-        pai.setFilhoDireito(avo);
-        pai.setPai(avo.getPai());
-        // que tipo de filho o pai vai ser
-        if(avo.getPai()!=null){
-            if(ehFilhoDireito(avo)){
-                (avo.getPai()).setFilhoDireito(pai);
+        node.setFilhoEsquerdo(filhoDireito);
+        filhoEsquerdo.setFilhoDireito(node);
+        filhoEsquerdo.setPai(antigoPaidoNode);
+        if(node.getPai() != null){
+            if(ehFilhoEsquerdo(node)){
+                (node.getPai()).setFilhoEsquerdo(filhoEsquerdo);
+            }else{
+                (node.getPai()).setFilhoDireito(filhoEsquerdo);
             }
-            else{
-                (avo.getPai()).setFilhoEsquerdo(pai);
-            }
+        }else{
+            filhoEsquerdo.setPai(null);
+            raiz = filhoEsquerdo;
         }
-        // se o avo for raiz
-        else{
-            pai.setPai(null);
-            raiz = pai;
-        }
-        avo.setPai(pai);
+        node.setPai(filhoEsquerdo);
         // setando as novas cores
-        pai.setCor(0);
-        avo.setCor(1);
+        node.setCor(1);
+        filhoEsquerdo.setCor(0);
+
+        return node;
     }
+
 
     private No sucessor(No node){
         if(node.getFilhoEsquerdo() == null){
@@ -426,6 +392,24 @@ public class ArvoreRN {
             System.out.println();
         }
     }
+
+    public void mostrarArvoreComCor() {
+        a.clear(); // limpando a array para ser possível imprimir novamente
+        Object[][] m = new Object[altura(raiz) + 1][size()];
+        emOrdemP(raiz);
+        for (int i = 0; i < a.size(); i++) {
+            String cor = a.get(i).getCor() == 1 ? "\033[31m" : "\033[0m"; // Define a cor vermelha se o nó for rubro
+            m[profundidade(a.get(i))][i] = cor + a.get(i).getChave() + "\033[0m"; // Define a cor normal após o valor do nó
+        }
+
+        for (int l = 0; l < altura(raiz) + 1; l++) {
+            for (int c = 0; c < a.size(); c++) {
+                System.out.print(m[l][c] == null ? "\t" : m[l][c] + "\t");
+            }
+            System.out.println();
+        }
+    }
+
 
     public boolean temUmFilho(No node){
         if(node.getFilhoEsquerdo() != null && node.getFilhoDireito() == null){

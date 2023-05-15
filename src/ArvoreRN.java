@@ -350,6 +350,54 @@ public class ArvoreRN {
         return node;
     }
 
+    public Object removeChave(Object chave) throws InvalidNoException {
+        // se o nó for folha
+        No node = pesquisar(raiz, chave);
+        No noGuardado = node;
+        if (node == null) {
+            throw new InvalidNoException("Não foi possível encontrar essa chave na árvore");
+        }
+        if (ehExterno(node)) {
+            if (node == raiz && node.getFilhoEsquerdo() == null && node.getFilhoDireito() == null) {
+                Object temp = node.getChave();
+                node.setChave(null);
+                return temp;
+            }
+            // se é folha (não tem filhos)
+            Object temp = node.getChave();
+            // guarda o elemento da chave para poder retornar
+            if (ehFilhoDireito(node)) {
+                node.getPai().setFilhoDireito(null);
+                // setar o nó como null
+            } else {
+                node.getPai().setFilhoEsquerdo(null);
+            }
+            return temp;
+        }
+        // se o nó tem apenas um filho
+        if (temUmFilho(node)) {
+            if (node.getFilhoEsquerdo() != null) {
+                filho = node.getFilhoEsquerdo();
+            } else {
+                filho = node.getFilhoDireito();
+            }
+            if (ehFilhoDireito(node)) {
+                node.getPai().setFilhoDireito(filho);
+            } else {
+                node.getPai().setFilhoEsquerdo(filho);
+            }
+            filho.setPai(node.getPai());
+            return node.getChave();
+        }
+        if(temDoisFilhos(node)){
+            Object temp = node.getChave();
+            No sucessor = sucessor(node.getFilhoDireito());
+            removeChave(sucessor);
+            node.setChave(sucessor.getChave());
+            return temp;
+        }
+        return null;
+    }
 
     private No sucessor(No node){
         if(node.getFilhoEsquerdo() == null){
@@ -357,6 +405,28 @@ public class ArvoreRN {
         }
         else{
             return sucessor(node.getFilhoEsquerdo());
+        }
+    }
+
+    private void checaRegrasRemocao(No node, int sucessorCor){
+        // precisa ser passado o noGuardado e a cor do sucessor
+        // rubro → 1 e negro → 0
+
+        // situação 1 (v = rubro, sucessor = rubro)
+        if(node.getCor() == 1 && sucessorCor == 1){
+            return;
+        }
+        // situação 2 (v = negro, sucessor = rubro)
+        if(node.getCor() == 0 && sucessorCor == 1 ){
+
+        }
+        // situação 3 (v = negro, sucessor = negro)
+        if(node.getCor() == 0 && sucessorCor == 0){
+
+        }
+        // situação 4 (v = rubro, sucessor = negro)
+        if(node.getCor() == 1 && sucessorCor == 0){
+
         }
     }
 

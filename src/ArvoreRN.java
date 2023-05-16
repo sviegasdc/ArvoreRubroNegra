@@ -388,6 +388,7 @@ public class ArvoreRN {
             }
             filho.setPai(node.getPai());
             checaRegrasRemocao(noGuardado, filho);
+            corrigirRaiz();
             return node.getChave();
         }
         // se o nó tem dois filhos
@@ -397,6 +398,7 @@ public class ArvoreRN {
             removeChave(sucessor);
             node.setChave(sucessor.getChave());
             checaRegrasRemocao(noGuardado, sucessor);
+            corrigirRaiz();
             return temp;
         }
         return null;
@@ -602,9 +604,6 @@ public class ArvoreRN {
 
     public No getRaiz(){
         // retornar raiz da arvore
-        return raiz;
-    }
-    public No setRaiz(No node){
         return raiz;
     }
 

@@ -10,9 +10,10 @@ public class Main {
         No g = rn.addChave(13);
         No h = rn.addChave(16);
         rn.mostrarArvore();
-        System.out.println("---------------");
+        System.out.println("-----------------------------------------------------------------------------------------");
+        rn.removeChave(8);
         // fica bugado em temas claros
-        //rn.mostrarArvoreComCor();
+        rn.mostrarArvoreComCor();
 
     }
 }

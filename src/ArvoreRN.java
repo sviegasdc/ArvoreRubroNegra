@@ -424,6 +424,7 @@ public class ArvoreRN {
         // situação 2 (v = negro, sucessor = rubro)
         if(node.getCor() == 0 && sucessor.getCor() == 1 ){
             sucessor.setCor(0);
+            return;
         }
         // situação 3 (v = negro, sucessor = negro)
         remocaoSituacao3(node,sucessor);
@@ -458,7 +459,10 @@ public class ArvoreRN {
                 // caso 2a (sucessor tem irmão negro e pai negro)
                 if(irmaoCor == 0 && pai.getCor() == 0){
                     //Pinte o irmão w de rubro
-                    irmao.setCor(1);
+                    if(irmao != null){
+                        irmao.setCor(1);
+                    }
+                    irmaoCor = 1;
                 }
 
                 //pegar os filhos do irmão
@@ -506,10 +510,10 @@ public class ArvoreRN {
     public No remocaoSituacao4(No node, No sucessor){
         // situação 4 (v = rubro, sucessor = negro)
         if(node.getCor() == 1 && sucessor.getCor() == 0){
-
+            sucessor.setCor(1);
+            remocaoSituacao3(node, sucessor);
         }
         return node;
-
     }
 
     ArrayList<No> a = new ArrayList<>();

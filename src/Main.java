@@ -9,10 +9,13 @@ public class Main {
         No f = rn.addChave(5);
         No g = rn.addChave(13);
         No h = rn.addChave(16);
-        rn.mostrarArvore();
+        rn.mostrarArvoreComCor();
         System.out.println("-----------------------------------------------------------------------------------------");
-        rn.removeChave(8);
+        rn.removeChave(1);
         // fica bugado em temas claros
+        rn.mostrarArvoreComCor();
+        System.out.println("-----------------------------------------------------------------------------------------");
+        rn.removeChave(7);
         rn.mostrarArvoreComCor();
 
     }

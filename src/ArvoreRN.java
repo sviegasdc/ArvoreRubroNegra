@@ -354,6 +354,7 @@ public class ArvoreRN {
         // se o nó for folha
         No node = pesquisar(raiz, chave);
         No noGuardado = node;
+        No paiGUardado =  node.getPai();
         if (node == null) {
             throw new InvalidNoException("Não foi possível encontrar essa chave na árvore");
         }
@@ -372,6 +373,8 @@ public class ArvoreRN {
             } else {
                 node.getPai().setFilhoEsquerdo(null);
             }
+            checaSituacaoFolha(noGuardado,paiGUardado );
+            corrigirRaiz();
             return temp;
         }
         // se o nó tem apenas um filho
@@ -416,7 +419,6 @@ public class ArvoreRN {
     private void checaRegrasRemocao(No node, No sucessor){
         // precisa ser passado o noGuardado e a cor do sucessor
         // rubro → 1 e negro → 0
-
         // situação 1 (v = rubro, sucessor = rubro)
         if(node.getCor() == 1 && sucessor.getCor() == 1){
             return;
@@ -430,6 +432,108 @@ public class ArvoreRN {
         remocaoSituacao3(node,sucessor);
         // situação 4 (v = rubro, sucessor = negro)
         remocaoSituacao4(node, sucessor);
+    }
+
+    public No checaSituacaoFolha(No node, No pai){
+        if(pai != null){
+            No irmao = null;
+            int irmaoCor = 0;
+            if(temFilhoDireito(pai)){
+                irmao = pai.getFilhoDireito();
+            }
+            else if(temFilhoEsquerdo(pai)){
+                irmao = pai.getFilhoEsquerdo();
+            }
+            if(node.getCor() == 0){
+                // caso 1 (sucessor tem irmão rubro e pai negro)
+                if(irmaoCor == 1 && pai.getCor() == 0){
+                    //Faça uma rotação simples esquerda
+                    rotacaoSimplesEsquerda(pai);
+                    //Pinte w de negro
+                    irmao.setCor(0);
+                    //Pinte pai de x de rubro
+                    pai.setCor(1);
+                }
+            }
+            // caso 2a (sucessor tem irmão negro e pai negro)
+            if(irmaoCor == 0 && pai.getCor() == 0){
+                //Pinte o irmão w de rubro
+                if(irmao != null){
+                    irmao.setCor(1);
+                }
+                irmaoCor = 1;
+            }
+            if(irmao != null){
+                //pegar os filhos do irmão
+                int filhoEsquerdoCor = 0;
+                int filhoDireitoCor = 0;
+                if(temFilhoDireito(irmao)){
+                    filhoDireitoCor = (irmao.getFilhoDireito()).getCor();
+                }
+                if(temFilhoEsquerdo(irmao)){
+                    filhoEsquerdoCor = (irmao.getFilhoEsquerdo()).getCor();
+                }
+
+                // caso 2b (sucessor tem irmão negro, com filhos negros e pai rubro)
+                if(irmaoCor == 1 && filhoEsquerdoCor == 0 && filhoDireitoCor == 0 && pai.getCor() == 1){
+                    //Pinte o irmão w de rubro e o pai de x de negro
+                    irmao.setCor(1);
+                    pai.setCor(0);
+                }
+                // caso 3 (sucessor tem irmão negro com filho esquerdo rubro e filho direito negro, pai qualquer cor)
+                else if(irmaoCor == 0 && filhoEsquerdoCor == 1 && filhoDireitoCor == 0){
+                    //Rotação simples direita em w
+                    rotacaoSimplesDireita(pai);
+                    //Trocar as cores de w com seu filho esquerdo
+                    irmao.setCor(1);
+                    if(irmao.getFilhoEsquerdo() != null){
+                        (irmao.getFilhoEsquerdo()).setCor(0);
+                    }
+
+                }
+                // caso 4 (sucessor tem irmão negro com filho esquerdo qualquer cor e filho direito rubro, pai qualquer cor)
+                if(irmaoCor == 0 && filhoDireitoCor == 1){
+                    int temp = pai.getCor();
+                    // rotação dupla
+                    if(irmao.getFilhoDireito() != null && irmao.getFilhoEsquerdo() == null){
+                        // rotação esquerda
+                        No paiLocal = pai;
+                        No filhoDireito = irmao.getFilhoDireito();
+                        irmao.setPai(filhoDireito);
+                        filhoDireito.setFilhoEsquerdo(irmao);
+                        filhoDireito.setPai(pai);
+                        pai.setFilhoEsquerdo(filhoDireito);
+                        irmao.setFilhoDireito(null);
+
+                        irmao.setCor(0);
+                        pai.setCor(0);
+                        filhoDireito.setCor(1);
+                        insercaoCaso3(irmao);
+                        if(irmao.getCor() == 0 && pai.getCor() == 1 && filhoDireito.getCor() == 0){
+                            pai.setCor(0);
+                            filhoDireito.setCor(1);
+                        }
+
+                    }else{
+                        //Rotação simples a esquerda
+                        rotacaoSimplesEsquerda(pai);
+                        //Pinte o pai de negro
+                        pai.setCor(0);
+                        //w igual a cor anterior do pai de x
+                        if(irmao != null){
+                            irmao.setCor(temp);
+                            //Pinte o filho direito de w de negro
+                            if(irmao.getFilhoDireito() != null){
+                                (irmao.getFilhoDireito()).setCor(0);
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
+        return node;
     }
 
     public No remocaoSituacao3(No node, No sucessor){
@@ -493,7 +597,7 @@ public class ArvoreRN {
                 if(irmaoCor == 0 && filhoDireitoCor == 1){
                     int temp = pai.getCor();
                     //Rotação simples a esquerda
-                    rotacaoSimplesEsquerda(irmao);
+                    rotacaoSimplesEsquerda(pai);
                     //Pinte o pai de negro
                     pai.setCor(0);
                     //w igual a cor anterior do pai de x
@@ -509,9 +613,16 @@ public class ArvoreRN {
 
     public No remocaoSituacao4(No node, No sucessor){
         // situação 4 (v = rubro, sucessor = negro)
-        if(node.getCor() == 1 && sucessor.getCor() == 0){
+        int sucessorCor = 0;
+        if(sucessor != null){
+            sucessorCor = sucessor.getCor();
+        }
+        if(node.getCor() == 1 && sucessor != null && sucessorCor == 0){
             sucessor.setCor(1);
             remocaoSituacao3(node, sucessor);
+        }
+        if(node.getCor() == 1 && sucessor == null && sucessorCor == 0){
+            checaSituacaoFolha(node, node.getPai());
         }
         return node;
     }
@@ -612,12 +723,10 @@ public class ArvoreRN {
     }
 
     public boolean temFilhoEsquerdo(No node){
-        System.out.println("Nó '"+ node.getChave() + "' tem filho esquerdo? ");
         return node.getFilhoEsquerdo()!= null;
     }
 
     public boolean temFilhoDireito(No node){
-        System.out.println("Nó '"+ node.getChave() + "' tem filho direito? ");
         return node.getFilhoDireito()!= null;
     }
 
